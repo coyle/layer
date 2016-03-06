@@ -22,9 +22,9 @@ type Layer struct {
 
 // Parameters contains the options passed in from the caller of request
 type Parameters struct {
-	dedupe *string
-	path   string
-	body   []byte
+	Dedupe *string
+	Path   string
+	Body   []byte
 }
 
 // NewLayer returns a new instance of a Layer struct
@@ -40,7 +40,7 @@ func NewLayer(token, appID, version string, timeout time.Duration) *Layer {
 func (l *Layer) request(method string, p Parameters) (*http.Response, error) {
 	method = strings.ToUpper(method)
 	client := http.Client{Timeout: l.timeout}
-	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s/%s", base, prefix, l.appID, p.path), nil)
+	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s/%s", base, prefix, l.appID, p.Path), nil)
 	if err != nil {
 		fmt.Println("ERROR")
 	}
@@ -51,8 +51,8 @@ func (l *Layer) request(method string, p Parameters) (*http.Response, error) {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
-	if p.dedupe != nil {
-		req.Header.Set("If-None-Match", *p.dedupe)
+	if p.Dedupe != nil {
+		req.Header.Set("If-None-Match", *p.Dedupe)
 	}
 
 	req.Header.Set("Accept", fmt.Sprintf("application/vnd.layer+json; version=%s", l.version))
