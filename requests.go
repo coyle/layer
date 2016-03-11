@@ -1,23 +1,5 @@
 package layer
 
-// GetAllConversationsForUser requests all conversations for a specific user
-func GetAllConversationsForUser() {}
-
-// GetConversationForUser request a specific Conversation for a user.
-func GetConversationForUser() {}
-
-// GetConversation requests the Conversation with the given ID
-func GetConversation() {}
-
-// CreateConversation creates a converstaion between two or more users
-func CreateConversation() {}
-
-// EditConversation edits the properties of a conversation
-func EditConversation() {}
-
-// DeleteConversation removes a conversation's history
-func DeleteConversation() {}
-
 // SendMessage creates a new message in a conversation
 func SendMessage() {}
 

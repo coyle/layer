@@ -1,6 +1,8 @@
 package layer
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -10,6 +12,13 @@ import (
 const (
 	base   = "https://api.layer.com"
 	prefix = "apps"
+)
+
+var (
+	// ErrMissingUserID __
+	ErrMissingUserID = errors.New("Missing UserID")
+	// ErrEmptyParticipants __
+	ErrEmptyParticipants = errors.New("Empty Participants")
 )
 
 // Layer is an instance of a layer api object
@@ -27,6 +36,13 @@ type Parameters struct {
 	Body   []byte
 }
 
+// QueryParameters contains the possible query parameters to add onto a layer API call
+type QueryParameters struct {
+	PageSize int
+	FromID   string
+	SortBy   string
+}
+
 // NewLayer returns a new instance of a Layer struct
 func NewLayer(token, appID, version string, timeout time.Duration) *Layer {
 	return &Layer{
@@ -37,10 +53,11 @@ func NewLayer(token, appID, version string, timeout time.Duration) *Layer {
 	}
 }
 
-func (l *Layer) request(method string, p Parameters) (*http.Response, error) {
+func (l *Layer) request(method string, p *Parameters) (*http.Response, error) {
 	method = strings.ToUpper(method)
 	client := http.Client{Timeout: l.timeout}
-	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s/%s", base, prefix, l.appID, p.Path), nil)
+
+	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s/%s", base, prefix, l.appID, p.Path), bytes.NewBuffer(p.Body))
 	if err != nil {
 		fmt.Println("ERROR")
 	}
