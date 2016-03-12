@@ -22,7 +22,7 @@ var (
 func TestCreateConversation(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	require.Contains(t, res.Participants, user1)
 	require.Contains(t, res.Participants, user2)
@@ -31,7 +31,7 @@ func TestCreateConversation(t *testing.T) {
 func TestGetAllConversationsForUser(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	_, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	_, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 
 	resp, err := l.GetAllConversationsForUser(user1, nil)
@@ -44,7 +44,7 @@ func TestGetAllConversationsForUser(t *testing.T) {
 func TestGetConversationForUser(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convoID := getID(res.ID)
 
@@ -60,7 +60,7 @@ func TestGetConversationForUser(t *testing.T) {
 func TestGetConversation(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convoID := getID(res.ID)
 
@@ -73,7 +73,7 @@ func TestGetConversation(t *testing.T) {
 func TestAddParticipants(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	convoID := getID(res.ID)
 	require.NoError(t, err)
 
@@ -92,7 +92,7 @@ func TestRemoveParticipants(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
 	user3 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2, user3}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2, user3}, true, Conversation{})
 	convoID := getID(res.ID)
 	require.NoError(t, err)
 
@@ -112,7 +112,7 @@ func TestSetParticipants(t *testing.T) {
 
 	user3 := uuid.New()
 	user4 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	convoID := getID(res.ID)
 	require.NoError(t, err)
 
@@ -130,7 +130,7 @@ func TestSetParticipants(t *testing.T) {
 func TestDeleteConversation(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	res, err := l.CreateConversation([]string{user1, user2}, true, []byte{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convoID := getID(res.ID)
 
@@ -147,6 +147,14 @@ func TestDeleteConversation(t *testing.T) {
 	require.NoError(t, err)
 	convoID3 := getID(res3.ID)
 	require.Equal(t, "object_deleted", convoID3)
+}
+
+func TestDeleteMetadata(t *testing.T) {
+	require.True(t, false)
+}
+
+func TestSetMetadata(t *testing.T) {
+	require.True(t, false)
 }
 
 func getID(s string) string {

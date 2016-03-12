@@ -51,9 +51,9 @@ type Sender struct {
 }
 
 type createConversationBody struct {
-	Participants []string `json:"participants"`
-	Distinct     bool     `json:"distinct"`
-	MetaData     []byte   `json:"metadata,omitempty"`
+	Participants []string    `json:"participants"`
+	Distinct     bool        `json:"distinct"`
+	MetaData     interface{} `json:"metadata,omitempty"`
 }
 
 type editConversationBody struct {
@@ -72,6 +72,12 @@ type setParticipants struct {
 	Operation string   `json:"operation"`
 	Property  string   `json:"property"`
 	Value     []string `json:"value"`
+}
+
+type metadata struct {
+	Operation string      `json:"operation"`
+	Property  string      `json:"property"`
+	Value     interface{} `json:"value"`
 }
 
 // GetAllConversationsForUser requests all conversations for a specific user
@@ -127,7 +133,7 @@ func (l *Layer) GetConversation(convID string) (ConversationResponse, error) {
 }
 
 // CreateConversation creates a conversation between two or more participants
-func (l *Layer) CreateConversation(participants []string, distinct bool, metadata []byte) (ConversationResponse, error) {
+func (l *Layer) CreateConversation(participants []string, distinct bool, metadata interface{}) (ConversationResponse, error) {
 	cr := ConversationResponse{}
 	if len(participants) == 0 {
 		return cr, ErrEmptyParticipants
@@ -157,7 +163,7 @@ func (l *Layer) AddParticipants(convID string, participants []string) (ok bool, 
 	if err != nil {
 		return false, err
 	}
-	return l.editParticipants(convID, body)
+	return l.editConversation(convID, body)
 }
 
 // RemoveParticipants removes  one or more participants from a conversation
@@ -167,7 +173,7 @@ func (l *Layer) RemoveParticipants(convID string, participants []string) (ok boo
 	if err != nil {
 		return false, err
 	}
-	return l.editParticipants(convID, body)
+	return l.editConversation(convID, body)
 }
 
 // SetParticipants will replace the entire set of participants with a new list
@@ -177,11 +183,11 @@ func (l *Layer) SetParticipants(convID string, participants []string) (ok bool, 
 	if err != nil {
 		return false, err
 	}
-	return l.editParticipants(convID, body)
+	return l.editConversation(convID, body)
 
 }
 
-func (l *Layer) editParticipants(convID string, body []byte) (bool, error) {
+func (l *Layer) editConversation(convID string, body []byte) (bool, error) {
 	p := Parameters{Path: fmt.Sprintf("conversations/%s", convID), Body: body}
 	resp, err := l.request("PATCH", &p)
 	if err != nil {
@@ -218,4 +224,24 @@ func (l *Layer) DeleteConversation(convID string) (ok bool, err error) {
 		return false, fmt.Errorf("Responded with Error Code %d", resp.StatusCode)
 	}
 	return true, nil
+}
+
+// DeleteMetadata removes metadata properties from a conversation
+func (l *Layer) DeleteMetadata(convID, property string, value interface{}) (bool, error) {
+	cc := []metadata{metadata{Operation: "delete", Property: property, Value: value}}
+	body, err := json.Marshal(&cc)
+	if err != nil {
+		return false, err
+	}
+	return l.editConversation(convID, body)
+}
+
+// SetMetadata sets metadata properties on a conversation
+func (l *Layer) SetMetadata(convID, property string, value interface{}) (bool, error) {
+	cc := []metadata{metadata{Operation: "delete", Property: property, Value: value}}
+	body, err := json.Marshal(&cc)
+	if err != nil {
+		return false, err
+	}
+	return l.editConversation(convID, body)
 }
