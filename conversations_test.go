@@ -2,6 +2,7 @@ package layer
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"strings"
 	"testing"
@@ -34,15 +35,18 @@ func TestCreateConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
+	defer cleanUpConversation(getID(res.ID))
 	require.Contains(t, res.Participants, user1)
 	require.Contains(t, res.Participants, user2)
+
 }
 
 func TestGetAllConversationsForUser(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
-	_, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
+	defer cleanUpConversation(getID(res.ID))
 
 	resp, err := l.GetAllConversationsForUser(user1, nil)
 	require.NoError(t, err)
@@ -57,6 +61,7 @@ func TestGetConversationForUser(t *testing.T) {
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convoID := getID(res.ID)
+	defer cleanUpConversation(convoID)
 
 	res2, err := l.GetConversationForUser(user1, convoID, nil)
 	require.NoError(t, err)
@@ -73,6 +78,7 @@ func TestGetConversation(t *testing.T) {
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convoID := getID(res.ID)
+	defer cleanUpConversation(convoID)
 
 	res2, err := l.GetConversation(convoID)
 	require.NoError(t, err)
@@ -86,6 +92,7 @@ func TestAddParticipants(t *testing.T) {
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	convoID := getID(res.ID)
 	require.NoError(t, err)
+	defer cleanUpConversation(convoID)
 
 	user3 := uuid.New()
 	ok, err := l.AddParticipants(convoID, []string{user3})
@@ -103,8 +110,9 @@ func TestRemoveParticipants(t *testing.T) {
 	user2 := uuid.New()
 	user3 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2, user3}, true, Conversation{})
-	convoID := getID(res.ID)
 	require.NoError(t, err)
+	convoID := getID(res.ID)
+	defer cleanUpConversation(convoID)
 
 	ok, err := l.RemoveParticipants(convoID, []string{user3})
 	require.NoError(t, err)
@@ -123,8 +131,9 @@ func TestSetParticipants(t *testing.T) {
 	user3 := uuid.New()
 	user4 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
-	convoID := getID(res.ID)
 	require.NoError(t, err)
+	convoID := getID(res.ID)
+	defer cleanUpConversation(convoID)
 
 	ok, err := l.SetParticipants(convoID, []string{user3, user4})
 	require.NoError(t, err)
@@ -167,6 +176,7 @@ func TestDeleteMetadata(t *testing.T) {
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convID := getID(res.ID)
+	defer cleanUpConversation(convID)
 
 	ok, err := l.SetMetadata(convID, "metadata.admin", md)
 	require.NoError(t, err)
@@ -204,6 +214,7 @@ func TestSetMetadata(t *testing.T) {
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
 	convID := getID(res.ID)
+	defer cleanUpConversation(convID)
 
 	ok, err := l.SetMetadata(convID, "metadata.admin", md)
 	require.NoError(t, err)
@@ -222,4 +233,11 @@ func TestSetMetadata(t *testing.T) {
 
 func getID(s string) string {
 	return strings.Replace(s, convHead, "", -1)
+}
+
+func cleanUpConversation(convID string) {
+	ok, err := l.DeleteConversation(convID)
+	if err != nil || !ok {
+		panic(fmt.Errorf("Failed to cleanup conversation: %s", convID))
+	}
 }
