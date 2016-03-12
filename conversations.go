@@ -12,7 +12,7 @@ type ConversationResponse struct {
 	URL                string      `json:"url,omitempty"`
 	MessagesURL        string      `json:"messages_url,omitempty"`
 	Created            time.Time   `json:"created_at,omitempty"`
-	MetaData           []byte      `json:"metadata,omitempty"`
+	MetaData           interface{} `json:"metadata,omitempty"`
 	Distinct           bool        `json:"distinct,omitempty"`
 	LastMessage        LastMessage `json:"last_message,omitempty"`
 	UnreadMessageCount int         `json:"recipient_status,omitempty"`
@@ -227,8 +227,8 @@ func (l *Layer) DeleteConversation(convID string) (ok bool, err error) {
 }
 
 // DeleteMetadata removes metadata properties from a conversation
-func (l *Layer) DeleteMetadata(convID, property string, value interface{}) (bool, error) {
-	cc := []metadata{metadata{Operation: "delete", Property: property, Value: value}}
+func (l *Layer) DeleteMetadata(convID, property string) (bool, error) {
+	cc := []metadata{metadata{Operation: "delete", Property: property}}
 	body, err := json.Marshal(&cc)
 	if err != nil {
 		return false, err
@@ -238,7 +238,7 @@ func (l *Layer) DeleteMetadata(convID, property string, value interface{}) (bool
 
 // SetMetadata sets metadata properties on a conversation
 func (l *Layer) SetMetadata(convID, property string, value interface{}) (bool, error) {
-	cc := []metadata{metadata{Operation: "delete", Property: property, Value: value}}
+	cc := []metadata{metadata{Operation: "set", Property: property, Value: value}}
 	body, err := json.Marshal(&cc)
 	if err != nil {
 		return false, err

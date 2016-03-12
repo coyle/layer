@@ -1,6 +1,7 @@
 package layer
 
 import (
+	"encoding/json"
 	"os"
 	"strings"
 	"testing"
@@ -18,6 +19,15 @@ var (
 	l        = NewLayer(token, appID, version, timeout)
 	convHead = "layer:///conversations/"
 )
+
+type testMetaAdmin struct {
+	Admin testMeta `json:"admin"`
+}
+
+type testMeta struct {
+	UserID string `json:"user_id"`
+	Name   string `json:"name"`
+}
 
 func TestCreateConversation(t *testing.T) {
 	user1 := uuid.New()
@@ -150,11 +160,64 @@ func TestDeleteConversation(t *testing.T) {
 }
 
 func TestDeleteMetadata(t *testing.T) {
-	require.True(t, false)
+	user1 := uuid.New()
+	user2 := uuid.New()
+	md := testMeta{Name: "fred", UserID: user1}
+
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
+	require.NoError(t, err)
+	convID := getID(res.ID)
+
+	ok, err := l.SetMetadata(convID, "metadata.admin", md)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	res2, err := l.GetConversation(convID)
+	require.NoError(t, err)
+
+	md2 := testMetaAdmin{}
+	d, err := json.Marshal(res2.MetaData)
+	require.NoError(t, err)
+	json.Unmarshal(d, &md2)
+	require.Equal(t, md.Name, md2.Admin.Name)
+	require.Equal(t, md.UserID, md2.Admin.UserID)
+
+	ok, err = l.DeleteMetadata(convID, "metadata.admin.name")
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	res3, err := l.GetConversation(convID)
+	require.NoError(t, err)
+	d3, err := json.Marshal(res3.MetaData)
+	require.NoError(t, err)
+	md3 := testMetaAdmin{}
+	json.Unmarshal(d3, &md3)
+	require.Equal(t, "", md3.Admin.Name)
+	require.Equal(t, md.UserID, md3.Admin.UserID)
 }
 
 func TestSetMetadata(t *testing.T) {
-	require.True(t, false)
+	user1 := uuid.New()
+	user2 := uuid.New()
+	md := testMeta{Name: "fred", UserID: user1}
+
+	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
+	require.NoError(t, err)
+	convID := getID(res.ID)
+
+	ok, err := l.SetMetadata(convID, "metadata.admin", md)
+	require.NoError(t, err)
+	require.True(t, ok)
+
+	res2, err := l.GetConversation(convID)
+	require.NoError(t, err)
+
+	md2 := testMetaAdmin{}
+	d, err := json.Marshal(res2.MetaData)
+	require.NoError(t, err)
+	json.Unmarshal(d, &md2)
+	require.Equal(t, md.Name, md2.Admin.Name)
+	require.Equal(t, md.UserID, md2.Admin.UserID)
 }
 
 func getID(s string) string {

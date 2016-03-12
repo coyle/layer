@@ -59,7 +59,7 @@ func (l *Layer) request(method string, p *Parameters) (*http.Response, error) {
 
 	req, err := http.NewRequest(method, fmt.Sprintf("%s/%s/%s/%s", base, prefix, l.appID, p.Path), bytes.NewBuffer(p.Body))
 	if err != nil {
-		fmt.Println("ERROR")
+		return nil, err
 	}
 
 	if method == "PATCH" {
