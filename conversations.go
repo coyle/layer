@@ -56,10 +56,22 @@ type createConversationBody struct {
 	MetaData     []byte   `json:"metadata,omitempty"`
 }
 
-type editConversation struct {
+type editConversationBody struct {
 	Operation string `json:"operation"`
 	Property  string `json:"property"`
 	Value     []byte `json:"value"`
+}
+
+type participantBody struct {
+	Operation string `json:"operation"`
+	Property  string `json:"property"`
+	Value     string `json:"value"`
+}
+
+type setParticipants struct {
+	Operation string   `json:"operation"`
+	Property  string   `json:"property"`
+	Value     []string `json:"value"`
 }
 
 // GetAllConversationsForUser requests all conversations for a specific user
@@ -138,23 +150,59 @@ func (l *Layer) CreateConversation(participants []string, distinct bool, metadat
 	return cr, nil
 }
 
-// EditConversation adds/removes the participants or sets/deletes metadata properties of a conversation
-func (l *Layer) EditConversation(convID, operation, property string, value []byte) (ConversationResponse, error) {
-	cr := ConversationResponse{}
-	c := editConversation{Operation: "set", Property: property, Value: value}
-	body, err := json.Marshal(&c)
+// AddParticipants adds one or more participants to a conversation
+func (l *Layer) AddParticipants(convID string, participants []string) (ok bool, err error) {
+	cc := buildParticipantBoy(participants, "add")
+	body, err := json.Marshal(&cc)
 	if err != nil {
-		return cr, err
+		return false, err
 	}
+	return l.editParticipants(convID, body)
+}
+
+// RemoveParticipants removes  one or more participants from a conversation
+func (l *Layer) RemoveParticipants(convID string, participants []string) (ok bool, err error) {
+	cc := buildParticipantBoy(participants, "remove")
+	body, err := json.Marshal(&cc)
+	if err != nil {
+		return false, err
+	}
+	return l.editParticipants(convID, body)
+}
+
+// SetParticipants will replace the entire set of participants with a new list
+func (l *Layer) SetParticipants(convID string, participants []string) (ok bool, err error) {
+	cc := []setParticipants{setParticipants{Operation: "set", Property: "participants", Value: participants}}
+	body, err := json.Marshal(&cc)
+	if err != nil {
+		return false, err
+	}
+	return l.editParticipants(convID, body)
+
+}
+
+func (l *Layer) editParticipants(convID string, body []byte) (bool, error) {
 	p := Parameters{Path: fmt.Sprintf("conversations/%s", convID), Body: body}
 	resp, err := l.request("PATCH", &p)
 	if err != nil {
-		return cr, err
+		return false, err
 	}
 	defer resp.Body.Close()
 
-	json.NewDecoder(resp.Body).Decode(&cr)
-	return cr, nil
+	if resp.StatusCode != 204 {
+		return false, fmt.Errorf("Responded with Error Code %d", resp.StatusCode)
+	}
+	return true, nil
+
+}
+
+func buildParticipantBoy(p []string, operation string) []participantBody {
+	cc := []participantBody{}
+	for _, v := range p {
+		cc = append(cc, participantBody{Operation: operation, Property: "participants", Value: v})
+	}
+
+	return cc
 }
 
 // DeleteConversation removes a conversation's history
