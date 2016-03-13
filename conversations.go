@@ -43,11 +43,13 @@ type Parts struct {
 	ID       string `json:"id,omitempty"`
 	MimeType string `json:"mime_type,omitempty"`
 	Body     string `json:"body,omitempty"`
+	Encoding string `json:"encoding,omitempty"`
 }
 
 // Sender contains information pertaining to the Sender of the LastMessage within a ConversationResponse
 type Sender struct {
 	UserID string `json:"user_id,omitempty"`
+	Name   string `json:"name,omitempty"`
 }
 
 type createConversationBody struct {
