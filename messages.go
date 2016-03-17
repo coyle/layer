@@ -54,7 +54,19 @@ func UploadRichContent() {}
 func SendMessageWithRichContent() {}
 
 // GetMessagesForUser requests all messages in a conversation from a specific user's perspective
-func GetMessagesForUser() {}
+func (l *Layer) GetMessagesForUser(convID, userID string) ([]MessageResponse, error) {
+	p := Parameters{Path: fmt.Sprintf("users/%s/conversations/%s/messages", userID, convID)}
+	resp, err := l.request("GET", &p)
+	if err != nil {
+		return []MessageResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	m := []MessageResponse{}
+	json.NewDecoder(resp.Body).Decode(&m)
+
+	return m, err
+}
 
 // GetAllMessages requests all messages in a conversation from the System's perspective
 func (l *Layer) GetAllMessages(convID string) ([]MessageResponse, error) {
@@ -71,11 +83,33 @@ func (l *Layer) GetAllMessages(convID string) ([]MessageResponse, error) {
 }
 
 // GetMessageForUser requests a single message from a conversation from a specific user's perspective
-func GetMessageForUser() {}
+func (l *Layer) GetMessageForUser(userID, messageID string) (MessageResponse, error) {
+	p := Parameters{Path: fmt.Sprintf("users/%s/messages/%s", userID, messageID)}
+
+	resp, err := l.request("GET", &p)
+	if err != nil {
+		return MessageResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	m := MessageResponse{}
+	json.NewDecoder(resp.Body).Decode(&m)
+	return m, err
+}
 
 // GetMessage request a single message from a conversation from the System's perspective
-func GetMessage() {
+func (l *Layer) GetMessage(convID, msgID string) (MessageResponse, error) {
+	p := Parameters{Path: fmt.Sprintf("conversations/%s/messages/%s", convID, msgID)}
 
+	resp, err := l.request("GET", &p)
+	if err != nil {
+		return MessageResponse{}, err
+	}
+	defer resp.Body.Close()
+
+	m := MessageResponse{}
+	json.NewDecoder(resp.Body).Decode(&m)
+	return m, err
 }
 
 // DeleteMessage causes the message to be destroyed for all recipients.

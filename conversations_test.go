@@ -35,7 +35,7 @@ func TestCreateConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	defer cleanUpConversation(getID(res.ID))
+	defer cleanUpConversation(getConvID(res.ID))
 	require.Contains(t, res.Participants, user1)
 	require.Contains(t, res.Participants, user2)
 
@@ -46,7 +46,7 @@ func TestGetAllConversationsForUser(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	defer cleanUpConversation(getID(res.ID))
+	defer cleanUpConversation(getConvID(res.ID))
 
 	resp, err := l.GetAllConversationsForUser(user1, nil)
 	require.NoError(t, err)
@@ -60,12 +60,12 @@ func TestGetConversationForUser(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getID(res.ID)
+	convoID := getConvID(res.ID)
 	defer cleanUpConversation(convoID)
 
 	res2, err := l.GetConversationForUser(user1, convoID, nil)
 	require.NoError(t, err)
-	convoID2 := getID(res2.ID)
+	convoID2 := getConvID(res2.ID)
 	require.Equal(t, convoID, convoID2)
 
 	require.Contains(t, res2.Participants, user1)
@@ -77,12 +77,12 @@ func TestGetConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getID(res.ID)
+	convoID := getConvID(res.ID)
 	defer cleanUpConversation(convoID)
 
 	res2, err := l.GetConversation(convoID)
 	require.NoError(t, err)
-	convoID2 := getID(res2.ID)
+	convoID2 := getConvID(res2.ID)
 	require.Equal(t, convoID, convoID2)
 }
 
@@ -90,7 +90,7 @@ func TestAddParticipants(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
-	convoID := getID(res.ID)
+	convoID := getConvID(res.ID)
 	require.NoError(t, err)
 	defer cleanUpConversation(convoID)
 
@@ -111,7 +111,7 @@ func TestRemoveParticipants(t *testing.T) {
 	user3 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2, user3}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getID(res.ID)
+	convoID := getConvID(res.ID)
 	defer cleanUpConversation(convoID)
 
 	ok, err := l.RemoveParticipants(convoID, []string{user3})
@@ -132,7 +132,7 @@ func TestSetParticipants(t *testing.T) {
 	user4 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getID(res.ID)
+	convoID := getConvID(res.ID)
 	defer cleanUpConversation(convoID)
 
 	ok, err := l.SetParticipants(convoID, []string{user3, user4})
@@ -151,11 +151,11 @@ func TestDeleteConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getID(res.ID)
+	convoID := getConvID(res.ID)
 
 	res2, err := l.GetConversation(convoID)
 	require.NoError(t, err)
-	convoID2 := getID(res2.ID)
+	convoID2 := getConvID(res2.ID)
 	require.Equal(t, convoID, convoID2)
 
 	ok, err := l.DeleteConversation(convoID)
@@ -164,7 +164,7 @@ func TestDeleteConversation(t *testing.T) {
 
 	res3, err := l.GetConversation(convoID)
 	require.NoError(t, err)
-	convoID3 := getID(res3.ID)
+	convoID3 := getConvID(res3.ID)
 	require.Equal(t, "object_deleted", convoID3)
 }
 
@@ -175,7 +175,7 @@ func TestDeleteMetadata(t *testing.T) {
 
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convID := getID(res.ID)
+	convID := getConvID(res.ID)
 	defer cleanUpConversation(convID)
 
 	ok, err := l.SetMetadata(convID, "metadata.admin", md)
@@ -213,7 +213,7 @@ func TestSetMetadata(t *testing.T) {
 
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convID := getID(res.ID)
+	convID := getConvID(res.ID)
 	defer cleanUpConversation(convID)
 
 	ok, err := l.SetMetadata(convID, "metadata.admin", md)
@@ -231,7 +231,7 @@ func TestSetMetadata(t *testing.T) {
 	require.Equal(t, md.UserID, md2.Admin.UserID)
 }
 
-func getID(s string) string {
+func getConvID(s string) string {
 	return strings.Replace(s, convHead, "", -1)
 }
 
