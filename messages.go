@@ -47,10 +47,12 @@ func (l *Layer) SendMessage(convID string, sender string, parts []Parts, n Notif
 
 // UploadRichContent allows messages whose body is larger than 2KB to be sent. Must be called prior to sending
 // message with rich content
+// TODO
 func UploadRichContent() {}
 
 // SendMessageWithRichContent will send a Message that includes the Rich Content part of a messgae
 // once the Rich Content upload has completed from a send message request
+// TODO
 func SendMessageWithRichContent() {}
 
 // GetMessagesForUser requests all messages in a conversation from a specific user's perspective
@@ -113,4 +115,18 @@ func (l *Layer) GetMessage(convID, msgID string) (MessageResponse, error) {
 }
 
 // DeleteMessage causes the message to be destroyed for all recipients.
-func DeleteMessage() {}
+func (l *Layer) DeleteMessage(convID, msgID string) (ok bool, err error) {
+	p := Parameters{Path: fmt.Sprintf("conversations/%s/messages/%s", convID, msgID)}
+
+	resp, err := l.request("DELETE", &p)
+	if err != nil {
+		return false, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 204 {
+		return false, fmt.Errorf("Responded with Error Code %d", resp.StatusCode)
+	}
+
+	return true, nil
+}
