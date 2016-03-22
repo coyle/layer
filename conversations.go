@@ -3,7 +3,12 @@ package layer
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
+)
+
+var (
+	convHead = "layer:///conversations/"
 )
 
 // ConversationResponse contains fields returned in the JSON response of requests made to the conversation endpoint
@@ -80,6 +85,11 @@ type metadata struct {
 	Operation string      `json:"operation"`
 	Property  string      `json:"property"`
 	Value     interface{} `json:"value"`
+}
+
+// GetConversationID returns the conversation ID from a conversation response object
+func (c ConversationResponse) GetConversationID() string {
+	return strings.Replace(c.ID, convHead, "", -1)
 }
 
 // GetAllConversationsForUser requests all conversations for a specific user
