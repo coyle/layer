@@ -38,7 +38,7 @@ func main() {
   conversation, err := l.CreateConversation([]string{"user1", "user2"}, distinct, Metadata{})
 
   // Send a message
-  cid := conversation.GetConversationID()
+  cid := conversation.GetID()
 
   p := Parts{
 		Body:     "Hello World",

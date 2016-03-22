@@ -13,12 +13,11 @@ import (
 )
 
 var (
-	token    = os.Getenv("LAYER_TEST_TOKEN")
-	appID    = os.Getenv("LAYER_TEST_APPID")
-	version  = "1.0"
-	timeout  = 30 * time.Second
-	l        = NewLayer(token, appID, version, timeout)
-	convHead = "layer:///conversations/"
+	token   = os.Getenv("LAYER_TEST_TOKEN")
+	appID   = os.Getenv("LAYER_TEST_APPID")
+	version = "1.0"
+	timeout = 30 * time.Second
+	l       = NewLayer(token, appID, version, timeout)
 )
 
 type testMetaAdmin struct {
@@ -35,7 +34,7 @@ func TestCreateConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	defer cleanUpConversation(getConvID(res.ID))
+	defer cleanUpConversation(res.GetID())
 	require.Contains(t, res.Participants, user1)
 	require.Contains(t, res.Participants, user2)
 
@@ -46,7 +45,7 @@ func TestGetAllConversationsForUser(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	defer cleanUpConversation(getConvID(res.ID))
+	defer cleanUpConversation(res.GetID())
 
 	resp, err := l.GetAllConversationsForUser(user1, nil)
 	require.NoError(t, err)
@@ -60,12 +59,12 @@ func TestGetConversationForUser(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getConvID(res.ID)
+	convoID := res.GetID()
 	defer cleanUpConversation(convoID)
 
 	res2, err := l.GetConversationForUser(user1, convoID, nil)
 	require.NoError(t, err)
-	convoID2 := getConvID(res2.ID)
+	convoID2 := res2.GetID()
 	require.Equal(t, convoID, convoID2)
 
 	require.Contains(t, res2.Participants, user1)
@@ -77,12 +76,12 @@ func TestGetConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getConvID(res.ID)
+	convoID := res.GetID()
 	defer cleanUpConversation(convoID)
 
 	res2, err := l.GetConversation(convoID)
 	require.NoError(t, err)
-	convoID2 := getConvID(res2.ID)
+	convoID2 := res2.GetID()
 	require.Equal(t, convoID, convoID2)
 }
 
@@ -90,7 +89,7 @@ func TestAddParticipants(t *testing.T) {
 	user1 := uuid.New()
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
-	convoID := getConvID(res.ID)
+	convoID := res.GetID()
 	require.NoError(t, err)
 	defer cleanUpConversation(convoID)
 
@@ -111,7 +110,7 @@ func TestRemoveParticipants(t *testing.T) {
 	user3 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2, user3}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getConvID(res.ID)
+	convoID := res.GetID()
 	defer cleanUpConversation(convoID)
 
 	ok, err := l.RemoveParticipants(convoID, []string{user3})
@@ -132,7 +131,7 @@ func TestSetParticipants(t *testing.T) {
 	user4 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getConvID(res.ID)
+	convoID := res.GetID()
 	defer cleanUpConversation(convoID)
 
 	ok, err := l.SetParticipants(convoID, []string{user3, user4})
@@ -151,11 +150,11 @@ func TestDeleteConversation(t *testing.T) {
 	user2 := uuid.New()
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convoID := getConvID(res.ID)
+	convoID := res.GetID()
 
 	res2, err := l.GetConversation(convoID)
 	require.NoError(t, err)
-	convoID2 := getConvID(res2.ID)
+	convoID2 := res2.GetID()
 	require.Equal(t, convoID, convoID2)
 
 	ok, err := l.DeleteConversation(convoID)
@@ -164,7 +163,7 @@ func TestDeleteConversation(t *testing.T) {
 
 	res3, err := l.GetConversation(convoID)
 	require.NoError(t, err)
-	convoID3 := getConvID(res3.ID)
+	convoID3 := res3.GetID()
 	require.Equal(t, "object_deleted", convoID3)
 }
 
@@ -175,7 +174,7 @@ func TestDeleteMetadata(t *testing.T) {
 
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convID := getConvID(res.ID)
+	convID := res.GetID()
 	defer cleanUpConversation(convID)
 
 	ok, err := l.SetMetadata(convID, "metadata.admin", md)
@@ -213,7 +212,7 @@ func TestSetMetadata(t *testing.T) {
 
 	res, err := l.CreateConversation([]string{user1, user2}, true, Conversation{})
 	require.NoError(t, err)
-	convID := getConvID(res.ID)
+	convID := res.GetID()
 	defer cleanUpConversation(convID)
 
 	ok, err := l.SetMetadata(convID, "metadata.admin", md)

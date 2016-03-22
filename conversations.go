@@ -87,8 +87,8 @@ type metadata struct {
 	Value     interface{} `json:"value"`
 }
 
-// GetConversationID returns the conversation ID from a conversation response object
-func (c ConversationResponse) GetConversationID() string {
+// GetID returns the conversation ID from a conversation response object
+func (c ConversationResponse) GetID() string {
 	return strings.Replace(c.ID, convHead, "", -1)
 }
 
