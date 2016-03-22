@@ -57,7 +57,7 @@ func main() {
 }
 ```
 
-### new LayerAPI(config)
+### LayerAPI (config)
 
 Layer API constructor is initialized with the following configuration values:
 
