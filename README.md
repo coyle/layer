@@ -1,3 +1,5 @@
+### Warning -- This is in active development and not stable
+
 # Layer API for Golang
 
 A Golang library that wraps the [Layer](https://layer.com) Platform API.
